@@ -30,10 +30,13 @@ jobs:
             --name hermapi22 \
             --settings HASURA_GRAPHQL_DATABASE_URL=$HASURA_GRAPHQL_DATABASE_URL
       - name: Update Hasura config
+        env:
+          HASURA_GRAPHQL_ADMIN_SECRET: ${{ secrets.HASURA_GRAPHQL_ADMIN_SECRET }}
         run: |
           az webapp config appsettings set \
             --resource-group herm \
             --name hermapi22 \
             --settings \
-              HASURA_GRAPHQL_ENABLE_CONSOLE="true" \
+              HASURA_GRAPHQL_ADMIN_SECRET=$HASURA_GRAPHQL_ADMIN_SECRET \
+              HASURA_GRAPHQL_ENABLE_CONSOLE="false" \
               HASURA_GRAPHQL_ENABLED_LOG_TYPES="startup, http-log, webhook-log, websocket-log, query-log"
