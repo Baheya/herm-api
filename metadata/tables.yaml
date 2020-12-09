@@ -62,6 +62,60 @@
             _eq: X-Hasura-User-Id
 - table:
     schema: public
+    name: scheduled_post
+  object_relationships:
+  - name: user
+    using:
+      foreign_key_constraint_on: user_id
+  insert_permissions:
+  - role: user
+    permission:
+      check:
+        user:
+          username:
+            _eq: X-Hasura-User-Id
+      columns:
+      - id
+      - text
+      - schedule_for
+      - is_pending
+      - user_id
+      - created_at
+      backend_only: false
+  select_permissions:
+  - role: user
+    permission:
+      columns:
+      - is_pending
+      - id
+      - user_id
+      - text
+      - created_at
+      - schedule_for
+      filter:
+        user:
+          username:
+            _eq: X-Hasura-User-Id
+  update_permissions:
+  - role: user
+    permission:
+      columns:
+      - is_pending
+      - id
+      - user_id
+      - text
+      - created_at
+      - schedule_for
+      filter:
+        user:
+          username:
+            _eq: X-Hasura-User-Id
+      check:
+        user:
+          username:
+            _eq: X-Hasura-User-Id
+- table:
+    schema: public
     name: user
   array_relationships:
   - name: account_users
@@ -71,6 +125,13 @@
         table:
           schema: public
           name: account_user
+  - name: scheduled_posts
+    using:
+      foreign_key_constraint_on:
+        column: user_id
+        table:
+          schema: public
+          name: scheduled_post
   insert_permissions:
   - role: user
     permission:
