@@ -2,7 +2,7 @@ actions:
 - name: checkAndRegisterUser
   definition:
     kind: synchronous
-    handler: http://host.docker.internal:7071/api/checkAndRegisterUser
+    handler: '{{HASURA_GRAPHQL_ACTIONS_BASE_URL}}/api/checkAndRegisterUser?code=TNgOi/iFqmtM8AEHQgsAu93hK5O5wO68mpHPcDNsjXh8H3XrDNpzfA=='
     forward_client_headers: true
   permissions:
   - role: user
