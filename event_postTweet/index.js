@@ -1,5 +1,6 @@
 const fetch = require('node-fetch');
 const Twitter = require('twitter-lite');
+const crypto = require('crypto');
 
 module.exports = async function (context, req) {
   try {
@@ -11,6 +12,7 @@ module.exports = async function (context, req) {
       access_token_key: keys.access_token_key,
       access_token_secret: keys.access_token_secret,
     });
+    context.log(client);
     const tweet = await client.post('statuses/update', {
       status: req.body.payload.text,
     });
@@ -30,7 +32,7 @@ module.exports = async function (context, req) {
   }
 };
 
-const getAccessKeys = async (userId, context) => {
+const getAccessKeys = async (userId) => {
   const query = `
   {
     account_user(where: {user_id: {_eq: ${userId}}}) {
@@ -42,21 +44,34 @@ const getAccessKeys = async (userId, context) => {
   }
   `;
 
-  const res = await makeRequest(
-    `${process.env.GRAPHQL_BASE_API}/v1/graphql`,
-    {
-      query,
-    },
-    context
-  );
+  const res = await makeRequest(`${process.env.GRAPHQL_BASE_API}/v1/graphql`, {
+    query,
+  });
   const { account_user } = res.data;
   const {
     account: { access_token, access_token_secret },
   } = account_user[0];
-  return { access_token_key: access_token, access_token_secret };
+
+  const decryptedAccessKey = decryptToken(access_token);
+  const decryptedAccessSecret = decryptToken(access_token_secret);
+
+  return {
+    access_token_key: decryptedAccessKey,
+    access_token_secret: decryptedAccessSecret,
+  };
 };
 
-const makeRequest = async (url, body, context) => {
+function decryptToken(token) {
+  const password = `${process.env.CRYPTO_PASSWORD}`;
+  const algorithm = `${process.env.CRYPTO_ALGO}`;
+
+  var decipher = crypto.createDecipher(algorithm, password);
+  var decrypted = decipher.update(token, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+  return decrypted;
+}
+
+const makeRequest = async (url, body) => {
   const res = await fetch(url, {
     method: 'POST',
     headers: {
